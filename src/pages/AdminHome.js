@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import DefaultLayout from "../components/DefaultLayout";
-import { getAllBikes } from "../redux/actions/bikesActions";
+import { deleteBike, getAllBikes } from "../redux/actions/bikesActions";
 import { Col, Row, Divider, DatePicker, Checkbox } from "antd";
 import { Link } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import moment from "moment";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Popconfirm, message } from "antd";
+
+
 
 const { RangePicker } = DatePicker;
-function Home() {
+function AdminHome() {
   const { bikes } = useSelector((state) => state.bikesReducer);
   const { loading } = useSelector((state) => state.alertsReducer);
   const [totalBikes, setTotalbikes] = useState([]);
@@ -22,42 +26,18 @@ function Home() {
     setTotalbikes(bikes);
   }, [bikes]);
 
-  function setFilter(values) {
-    var selectedFrom = moment(values[0], "MMM DD yyyy HH:mm");
-    var selectedTo = moment(values[1], "MMM DD yyyy HH:mm");
 
-    var temp = [];
-
-    for (var bike of bikes) {
-      if (bike.bookedTimeSlots.length == 0) {
-        temp.push(bike);
-      } else {
-        for (var booking of bike.bookedTimeSlots) {
-          if (
-            selectedFrom.isBetween(booking.from, booking.to) ||
-            selectedTo.isBetween(booking.from, booking.to) ||
-            moment(booking.from).isBetween(selectedFrom, selectedTo) ||
-            moment(booking.to).isBetween(selectedFrom, selectedTo)
-          ) {
-          } else {
-            temp.push(bike);
-          }
-        }
-      }
-    }
-
-    setTotalbikes(temp);
-  }
 
   return (
     <DefaultLayout>
-      <Row className="mt-3" justify="center">
-        <Col lg={20} sm={24} className="d-flex justify-content-left">
-          <RangePicker
-            onChange={setFilter}
-            showTime={{ format: "HH:mm" }}
-            format="MMM DD yyyy HH:mm"
-          />
+      <Row justify="center" gutter={16} className="mt-2">
+        <Col lg={20} sm={24}>
+          <div className="d-flex justify-content-between align-items-center">
+            <h3 className="mt-1 mr-2">Admin Panel</h3>
+            <button className="btn1">
+              <a href="/addbike">ADD BIKE</a>
+            </button>
+          </div>
         </Col>
       </Row>
 
@@ -77,9 +57,24 @@ function Home() {
                   </div>
 
                   <div>
-                    <button className="btn1 mr-2">
-                      <Link to={`/booking/${bike._id}`}>Book Now</Link>
-                    </button>
+                  <Link to={`/editbike/${bike._id}`}>
+                      <EditOutlined
+                        className="mr-3"
+                        style={{ color: "green", cursor: "pointer" }}
+                      />
+                    </Link>
+
+                    <Popconfirm
+                      title="Are you sure to delete this bike?"
+                       onConfirm={()=>{dispatch(deleteBike({bikeid : bike._id}))}}
+                      
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <DeleteOutlined
+                        style={{ color: "red", cursor: "pointer" }}
+                      />
+                    </Popconfirm>
                   </div>
                 </div>
               </div>
@@ -91,4 +86,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default AdminHome;
